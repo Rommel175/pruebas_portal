@@ -1,0 +1,29 @@
+.nav {
+    display: flex;
+    padding: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 50px;
+    align-self: stretch;
+    background: #FFF;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.header h1 {
+    color: #0B3C70;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+@media (width < 1024px) {
+    .nav {
+        display: none;
+    }
+}
