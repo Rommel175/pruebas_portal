@@ -51,10 +51,10 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
         setCurrentDate(formatDate)
 
         /*const fetchData = async () => {
-            const date3 = new Date();
-            const day = String(date3.getDate()).padStart(2, '0');
-            const mounth = String(date3.getMonth() + 1).padStart(2, '0');
-            const year = date3.getFullYear();
+            const date = new Date();
+            const day = String(date.getDate()).padStart(2, '0');
+            const mounth = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
 
             const { data, error } = await supabase
                 .from('historialFichajes')
@@ -82,15 +82,15 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
     //AL cambiar el estado fichaje realizar las accions del timer
     useEffect(() => {
 
-        if (estado == 'activo') {
+        if (estado == 'Activo') {
             setRunning(true);
             sessionStorage.setItem('run', 'true');
-        } else if (estado == 'inactivo') {
+        } else if (estado == 'Inactivo' || estado == 'Jornada Finalizada') {
             setRunning(false);
             setTime(0);
             sessionStorage.setItem('run', 'false');
             sessionStorage.setItem('time', '0');
-        } else if (estado === 'pausa') {
+        } else if (estado === 'Pausa') {
             setRunning(false);
             sessionStorage.setItem('run', 'false');
         }
@@ -99,10 +99,10 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
 
     //Establecer a Activo el estado del trabajador en la BD
     async function activo() {
-        const date3 = new Date();
-        const day = String(date3.getDate()).padStart(2, '0');
-        const mounth = String(date3.getMonth() + 1).padStart(2, '0');
-        const year = date3.getFullYear();
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const mounth = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
 
         const { data, error } = await supabase
             .from('historialFichajes')
@@ -123,7 +123,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
 
             const { error: updateError } = await supabase
                 .from('historialFichajes')
-                .update({ estado: 'activo' })
+                .update({ estado: 'Activo' })
                 .eq('id', fichajeId);
 
             if (updateError) {
@@ -136,59 +136,16 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
 
     function startTimer() {
         activo();
-        setEstado('activo');
+        setEstado('Activo');
         sessionStorage.setItem('run', 'true');
     }
 
     //Establecr a pausa el estado del trabajador en la BD
     async function pausa() {
-        const date3 = new Date();
-        const day = String(date3.getDate()).padStart(2, '0');
-        const mounth = String(date3.getMonth() + 1).padStart(2, '0');
-        const year = date3.getFullYear();
-
-        const { data, error } = await supabase
-            .from('historialFichajes')
-            .select('id')
-            .eq('created_at', `${year}-${mounth}-${day}`)
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error fetching fichaje state:', error);
-            return;
-        }
-
-        console.log(data);
-
-        if (data && data.length > 0) {
-            const fichajeId = data[0].id;
-            //console.log(fichajeId)
-
-            const { error: updateError } = await supabase
-                .from('historialFichajes')
-                .update({ estado: 'pausa' })
-                .eq('id', fichajeId);
-
-            if (updateError) {
-                console.error('Error updating fichaje:', updateError);
-                return;
-            }
-
-        }
-    }
-
-    function pauseTimer() {
-        pausa();
-        setEstado('pausa');
-        sessionStorage.setItem('run', 'false');
-    }
-
-    //Establecer a inactivo el estado del trabajador en la BD
-    async function salida() {
-        const date3 = new Date();
-        const day = String(date3.getDate()).padStart(2, '0');
-        const mounth = String(date3.getMonth() + 1).padStart(2, '0');
-        const year = date3.getFullYear();
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const mounth = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
 
         const { data, error } = await supabase
             .from('historialFichajes')
@@ -209,7 +166,50 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
 
             const { error: updateError } = await supabase
                 .from('historialFichajes')
-                .update({ estado: 'inactivo' })
+                .update({ estado: 'Pausa' })
+                .eq('id', fichajeId);
+
+            if (updateError) {
+                console.error('Error updating fichaje:', updateError);
+                return;
+            }
+
+        }
+    }
+
+    function pauseTimer() {
+        pausa();
+        setEstado('Pausa');
+        sessionStorage.setItem('run', 'false');
+    }
+
+    //Establecer a inactivo el estado del trabajador en la BD
+    async function salida() {
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const mounth = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        const { data, error } = await supabase
+            .from('historialFichajes')
+            .select('id')
+            .eq('created_at', `${year}-${mounth}-${day}`)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error fetching fichaje state:', error);
+            return;
+        }
+
+        //console.log(data);
+
+        if (data && data.length > 0) {
+            const fichajeId = data[0].id;
+            //console.log(fichajeId)
+
+            const { error: updateError } = await supabase
+                .from('historialFichajes')
+                .update({ estado: 'Jornada Finalizada' })
                 .eq('id', fichajeId);
 
             if (updateError) {
@@ -222,7 +222,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
 
     function stopTimer() {
         salida();
-        setEstado('inactivo');
+        setEstado('Jornada Finalizada');
         sessionStorage.setItem('run', 'false');
         sessionStorage.setItem('time', '0')
     }
@@ -308,7 +308,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
                     </div>
                     <div className={styles.buttons}>
                         {
-                            (estado == 'activo') && (
+                            (estado == 'Activo') && (
                                 <>
                                     <button className={styles.pausa} onClick={pauseTimer}>
                                         <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -323,7 +323,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
                         }
 
                         {
-                            (estado == 'inactivo') && (
+                            (estado == 'Inactivo' || estado == 'Jornada Finalizada') && (
                                 <>
                                     <button className={styles.entrada} onClick={startTimer}>
                                         <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -337,7 +337,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
                         }
 
                         {
-                            (estado == 'pausa') && (
+                            (estado == 'Pausa') && (
                                 <>
                                     <button className={styles.entrada} onClick={startTimer}>
                                         <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -345,7 +345,7 @@ export default function ContainerFichaje2({ estado, setEstado, user }: { estado:
                                         </svg>
                                         FICHAR ENTRADA
                                     </button>
-                                    <button className={styles.salida} onClick={stopTimer}>FICHAR SALIDA</button>
+                                    <button className={styles.salida} onClick={handleOpen}>FICHAR SALIDA</button>
                                 </>
                             )
                         }
