@@ -1,11 +1,12 @@
 'use client'
 
-import { User } from '@supabase/supabase-js';
-import styles from './containerSuperior.module.css';
-import { useEffect, useState } from 'react';
+import { User } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
 import { createClient } from '@/utils/supabase/client';
-import ContainerDatos2 from './containers/ContainerDatos2';
-import ContainerFichaje2 from './containers/ContainerFichaje2';
+import styles from './containerSuperior.module.css';
+import ContainerDatos from "./datos/ContainerDatos";
+import ContainerFichaje from "./fichaje/ContanerFichaje";
+
 
 export default function ContainerSuperior({ user }: { user: User }) {
     const [estado, setEstado] = useState('');
@@ -24,7 +25,7 @@ export default function ContainerSuperior({ user }: { user: User }) {
 
             const { data, error } = await supabase
                 .from('historialFichajes')
-                .select('estado, localizacionFichaje, horaEntrada, horaAproxSalida')
+                .select('localizacionFichaje, horaEntrada, horaAproxSalida')
                 .eq('created_at', `${year}-${mounth}-${day}`)
                 .eq('user_id', user.id);
 
@@ -34,8 +35,6 @@ export default function ContainerSuperior({ user }: { user: User }) {
             }
 
             if (data && data.length > 0) {
-                setEstado(data[0].estado);
-
                 if (data[0].localizacionFichaje) {
                     setLocalizacion(data[0].localizacionFichaje);
                 } else {
@@ -62,6 +61,21 @@ export default function ContainerSuperior({ user }: { user: User }) {
             } else {
                 console.log('undefined')
             };
+
+            const { data: dataEstado, error: errorEstado } = await supabase
+                .from('profiles')
+                .select('estado')
+                .eq('user_id', user.id)
+
+            if (errorEstado) {
+                console.log('Error fetching Estado: ', errorEstado)
+            }
+
+            if (dataEstado && dataEstado.length > 0) {
+                setEstado(dataEstado[0].estado);
+            } else {
+                console.log('undefined')
+            }
         }
 
         fetchData();
@@ -69,8 +83,8 @@ export default function ContainerSuperior({ user }: { user: User }) {
 
     return (
         <div className={styles.containerSuperior}>
-            <ContainerDatos2 user={user} estado={estado} localizacion={localizacion} setLocalizacion={setLocalizacion} horaInicio={horaInicio} horaFinalAprox={horaFinalAprox} />
-            <ContainerFichaje2 user={user} estado={estado} setEstado={setEstado} />
+            <ContainerDatos user={user} estado={estado} localizacion={localizacion} setLocalizacion={setLocalizacion} horaInicio={horaInicio} horaFinalAprox={horaFinalAprox} />
+            <ContainerFichaje user={user} estado={estado} setEstado={setEstado} />
         </div>
     );
 }

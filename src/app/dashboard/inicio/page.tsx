@@ -1,8 +1,8 @@
-import ContainerEquipo from '@/components/containers/equipo/ContainerEquipo';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import Modal from '@/components/inicio/Modal';
 import ContainerSuperior from '@/components/containers/containerSuperior/ContainerSuperior';
+import ContainerEquipo from '@/components/containers/equipo/ContainerEquipo';
 
 export default async function HomePage() {
 
@@ -18,9 +18,7 @@ export default async function HomePage() {
     <>
       <Modal user={user}/>
       <ContainerSuperior user={user}/>
-
-      <ContainerEquipo/>
-
+      <ContainerEquipo />
     </>
   );
 }
