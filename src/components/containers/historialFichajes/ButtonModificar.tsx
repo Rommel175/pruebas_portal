@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import styles from './buttonModificar.module.css'
 
 type Prop = {
@@ -10,8 +9,13 @@ type Prop = {
 }
 
 export default function ButtonModificar({ hour, date }: Prop) {
-    const { register, handleSubmit, formState: { errors } } = useForm();
     const [isOpen, setIsOpen] = useState(false);
+    const [peticion, setPeticion] = useState({
+        value: '',
+        hasError: false
+    });
+
+    const peticionRegexp = new RegExp(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
 
     function handleOpen() {
         setIsOpen(true);
@@ -21,7 +25,14 @@ export default function ButtonModificar({ hour, date }: Prop) {
         setIsOpen(false);
     }
 
-    const onSubmit = handleSubmit((data) => console.log(data));
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setPeticion({...peticion, value: e.target.value})
+    }
+
+    function handleOnBlur() {
+        const hasError = !peticionRegexp.test(peticion.value);
+        setPeticion((prevState) => ({...prevState, hasError}))
+    }
 
     return (
         <>
@@ -35,7 +46,7 @@ export default function ButtonModificar({ hour, date }: Prop) {
             {
                 (isOpen) && (
                     <div className={styles.overlay}>
-                        <form className={styles.modalContainer} onSubmit={onSubmit}>
+                        <form className={styles.modalContainer}>
                             <svg onClick={handleClose} className={styles.svgModal} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path fillRule="evenodd" clipRule="evenodd" d="M10.181 10.8737L14.3292 15.0219C14.4675 15.1555 14.6528 15.2294 14.845 15.2278C15.0373 15.2261 15.2212 15.149 15.3572 15.013C15.4932 14.877 15.5703 14.6931 15.5719 14.5009C15.5736 14.3086 15.4997 14.1234 15.3661 13.9851L11.2179 9.83679L15.3661 5.68853C15.4997 5.55023 15.5736 5.36499 15.5719 5.17273C15.5703 4.98046 15.4932 4.79654 15.3572 4.66058C15.2212 4.52462 15.0373 4.4475 14.845 4.44583C14.6528 4.44416 14.4675 4.51807 14.3292 4.65165L10.181 8.79991L6.03272 4.65165C5.8938 4.52137 5.70964 4.45026 5.51922 4.45335C5.32879 4.45644 5.14704 4.5335 5.01242 4.66821C4.8778 4.80293 4.80087 4.98474 4.79791 5.17516C4.79496 5.36559 4.8662 5.5497 4.99657 5.68853L9.1441 9.83679L4.99584 13.9851C4.9258 14.0527 4.86994 14.1336 4.83151 14.2231C4.79308 14.3125 4.77285 14.4088 4.772 14.5061C4.77115 14.6035 4.78971 14.7001 4.82658 14.7902C4.86345 14.8803 4.9179 14.9622 4.98675 15.031C5.0556 15.0999 5.13748 15.1543 5.2276 15.1912C5.31771 15.2281 5.41427 15.2466 5.51164 15.2458C5.60901 15.2449 5.70523 15.2247 5.7947 15.1863C5.88416 15.1478 5.96508 15.092 6.03272 15.0219L10.181 10.8737Z" fill="#333333" />
                             </svg>
@@ -62,19 +73,11 @@ export default function ButtonModificar({ hour, date }: Prop) {
 
                                 <div className={styles.hourItem}>
                                     <label>Petición</label>
-                                    <input type="text" placeholder='Escribe aquí la hora, ej: 19:00' {...register('peticion', {
-                                        required: {
-                                            value: true,
-                                            message: 'Este campo es obligatorio'
-                                        },
-                                        pattern: {
-                                            value: /^(?:[01]\d|2[0-3]):[0-5]\d$/,
-                                            message: 'El formato debe ser HH:mm, ej: 19:00'
-                                        }
-                                    })} />
-
-                                    {errors.peticion?.message && <span style={{ color: 'red' }}>{String(errors.peticion.message)}</span>}
-
+                                    <input type="text" placeholder='Escribe aquí la hora, ej: 19:00' onChange={handleChange} onBlur={handleOnBlur} />
+                                    {
+                                        (peticion.hasError) && 
+                                        <span style={{color: 'red', fontSize: '12px'}}>Hora no válida</span>
+                                    }
                                 </div>
 
                             </div>

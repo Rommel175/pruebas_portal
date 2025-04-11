@@ -1,7 +1,84 @@
+'use client'
+
+import { createClient } from '@/utils/supabase/client';
 import styles from './containerTable.module.css'
 import TableItem from './TableItem';
+import { useEffect, useState } from 'react';
+import { User } from '@supabase/supabase-js';
 
-export default function ContainerTable() {
+export default function ContainerTable( {user}: {user: User} ) {
+
+  type Users = {
+    name: string;
+    email: string;
+    estado: string;
+    image: string;
+    hora: string,
+    hora_aprox_salida: string,
+    localizacion: string
+  }
+
+  const [users, setUsers] = useState<Users[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    const fetchData = async () => {
+
+      const { data: consulta, error: errorConsulta } = await supabase
+        .from('profiles')
+        .select('user_id, name, estado, email, image')
+        .neq('user_id', user.id);
+
+      if (errorConsulta) {
+        console.log('Error fetching auth users: ', errorConsulta);
+        return;
+      }
+
+      if (consulta && consulta.length > 0) {
+        //console.log(consulta)
+
+        const usersData: Users[] = [];
+
+        for (let i = 0; i < consulta.length; i++) {
+          const { data: consulta2, error: errorConsulta2 } = await supabase
+            .from('vista_fichajes')
+            .select('hora, localizacion, hora_aprox_salida')
+            .eq('user_id', consulta[i].user_id)
+            .eq('fecha', `${year}-${month}-${day}`)
+
+          if (errorConsulta2) {
+            console.log('Error consulta Vista: ', errorConsulta2)
+          }
+
+          if (consulta2 && consulta2.length > 0) {
+            console.log(consulta2)
+            usersData.push({
+              name: consulta[i].name,
+              email: consulta[i].email,
+              estado: consulta[i].estado,
+              image: consulta[i].image,
+              localizacion: consulta2[consulta2.length - 1].localizacion,
+              hora: consulta2[0].hora,
+              hora_aprox_salida: consulta2[consulta2.length - 1].hora_aprox_salida,
+            });
+          }
+        }
+
+        setUsers(usersData)
+
+      }
+
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <div className={styles.table}>
       <div className={styles.tableNav}>
@@ -16,11 +93,12 @@ export default function ContainerTable() {
           </svg>
         </h3>
       </div>
-      <TableItem name='Jane Cooper' email='jane.cooper@example.com' estado='Activo' localizacion='Casa' inicio='08:27' />
-      <TableItem name='Jane Cooper' email='jane.cooper@example.com' />
-      <TableItem name='Rommel Romero' email='rommel.xana@gmail.com' foto='https://lh3.googleusercontent.com/a/ACg8ocJw-cwSFkgnKO0KFi-uhTHogucMnwh5aEAeTzyj86gExsAyclToJA=s96-c' estado='Pausa' localizacion='Oficina' inicio='09:00' final='15:30' />
-      <TableItem name='Jane Cooper' email='jane.cooper@example.com' estado='Vacaciones' />
-      <TableItem name='Jane Cooper' email='jane.cooper@example.com' estado='Inactivo' />
+
+      {
+        users.map((item, index) => {
+          return <TableItem key={index} name={item.name} email={item.email} estado={item.estado} foto={item.image} localizacion={item.localizacion} inicio={item.hora} final={item.hora_aprox_salida} />
+        })
+      }
     </div>
   );
 }

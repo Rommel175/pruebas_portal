@@ -165,10 +165,6 @@ export default function Modal({ user }: { user: User }) {
         //PENDENTE HACER LÓGICA PARA EVITAR DUPLICIDAD
     }
 
-    useEffect(() => {
-        console.log(localizacionFichaje)
-    }, [localizacionFichaje])
-
     function handleClose() {
         setIsOpen(false);
     }
@@ -239,7 +235,7 @@ export default function Modal({ user }: { user: User }) {
                             <input type="text" value={horaFinalAprox.value} onChange={handleChangeHoraAprox} onBlur={handleBlurHoraAprox} placeholder='Ex: 18:30' required />
                             {
                                 (horaFinalAprox.hasError) &&
-                                <span style={{ color: 'red' }}>No es una hora válida</span>
+                                <span style={{ color: 'red', fontSize: '12px' }}>Hora no válida</span>
                             }
                         </div>
 
